@@ -1,0 +1,91 @@
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    text-align: center;
+    background: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+}
+
+h1 {
+    color: #333;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+p {
+    color: #666;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Estilos específicos para el carrusel */
+.carousel-container {
+    width: 100%; /* El ancho del contenedor será igual al ancho del padre */
+    height: 200px; /* Altura fija para el carrusel */
+    overflow: hidden; /* Oculta cualquier contenido que se desborde */
+    margin-bottom: 1rem;
+    position: relative; /* Necesario para posicionar elementos internos */
+}
+
+.carousel-container img {
+    width: 100%; /* La imagen ocupa todo el ancho del contenedor */
+    height: 100%; /* La imagen ocupa toda la altura del contenedor */
+    object-fit: cover; /* Ajusta la imagen para cubrir el contenedor sin deformarla */
+    position: absolute; /* Posicionamiento absoluto para controlar mejor la imagen */
+    top: 0;
+    left: 0;
+}
+
+.carousel-image {
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* Estilos para la barra de progreso */
+.progress-bar {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    position: relative;
+    height: 10px;
+}
+
+.progress-bar-fill {
+    width: 0;
+    height: 100%;
+    background-color: #4caf50;
+    transition: width 0.5s ease-in-out;
+}
+
+.progress-bar-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    color: #333;
+    font-weight: bold;
+}
+
+.logo {
+    width: 100%;
+    max-width: 549px;
+    height: auto;
+    margin-bottom: 20px;
+    margin-top: 30px;
+}
