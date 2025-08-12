@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceder a AlphaSystems WiFi</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Bienvenid@ a AlphaSystems</h1>
+        <img src="/recursos/maraplus.jpeg" alt="Logo" class="logo">
+        <p>Completa tus datos y accede con Google para obtener internet gratis.</p>
+        <form id="userDataForm">
+            <input type="number" id="edad" name="edad" placeholder="Edad" required>
+            <select id="sexo" name="sexo" required>
+                <option value="" disabled selected>Selecciona tu sexo</option>
+                <option value="masculino">Masculino</option>
+                <option value="femenino">Femenino</option>
+            </select>
+            <select id="especialidad" name="especialidad" required>
+                <option value="" disabled selected>Selecciona tu especialidad</option>
+                <option value="pediatria">Pediatría</option>
+                <option value="ginecologia">Ginecología</option>
+            </select>
+        </form>
+        <button id="googleLoginButton">ACCEDER CON GOOGLE</button>
+        <div class="footer">
+            <p>© 2025 AlphaSystems.com</p>
+        </div>
+    </div>
+    <script>
+        document.getElementById('googleLoginButton').addEventListener('click', async function() {
+            const form = document.getElementById('userDataForm');
+            if (form.checkValidity()) {
+                const edad = document.getElementById('edad').value;
+                const sexo = document.getElementById('sexo').value;
+                const especialidad = document.getElementById('especialidad').value;
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const mac = urlParams.get('mac');
+                const login_url = urlParams.get('login_url');
+
+                if (!mac || !login_url) {
+                    alert('Error: Faltan parámetros del punto de acceso. Por favor, reconéctese a la red Wi-Fi.');
+                    return;
+                }
+
+                // Guardamos los datos del formulario en el navegador para recuperarlos después.
+                localStorage.setItem('portalFormData', JSON.stringify({ edad, sexo, especialidad }));
+
+                // Pedimos la URL de autenticación a nuestro backend.
+                const response = await fetch(`/api/callback?step=getAuthUrl&mac=${mac}&login_url=${encodeURIComponent(login_url)}`);
+                const data = await response.json();
+                
+                if (data.authUrl) {
+                    window.location.href = data.authUrl;
+                } else {
+                    alert('Error al contactar el servidor de autenticación. Por favor, intente de nuevo.');
+                }
+            } else {
+                form.reportValidity();
+            }
+        });
+    </script>
+</body>
+</html>
