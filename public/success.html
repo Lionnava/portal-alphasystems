@@ -1,22 +1,61 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>¡Conectado!</title>
-    <link rel="stylesheet" href="/css/styles.css">
-</head>
 <body>
     <div class="container">
         <h1>¡CONECTADO CON ÉXITO!</h1>
-        <p>Ya puedes navegar por internet. Mientras tanto, te mostramos nuestras promociones.</p>
-        <div class="carousel-container">
-            <img class="logo" src="/recursos/maraplus.jpeg" alt="Publicidad">
-        </div>
-        <p class="small-text">Disfruta del servicio. Esta ventana se puede cerrar.</p>
+        <p>Ya puedes navegar por internet. Si deseas terminar tu sesión, haz clic abajo.</p>
+        
+        <!-- Botón y mensaje para cerrar sesión -->
+        <button id="logoutButton">CERRAR SESIÓN</button>
+        <p id="logoutMessage" class="small-text" style="display: none;"></p>
+        
         <div class="footer">
             © 2025 AlphaSystems.com
         </div>
     </div>
+    
+    <script>
+        // Guardamos la MAC del cliente que nos llega en la URL final
+        const urlParams = new URLSearchParams(window.location.search);
+        const clientMac = urlParams.get('user');
+        
+        if (clientMac) {
+            localStorage.setItem('clientMacAddress', clientMac);
+        }
+
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            const macAddress = localStorage.getItem('clientMacAddress');
+            const logoutButton = document.getElementById('logoutButton');
+            const logoutMessage = document.getElementById('logoutMessage');
+
+            if (!macAddress) {
+                alert("Error: No se encontró la dirección MAC del dispositivo para cerrar la sesión.");
+                return;
+            }
+
+            logoutButton.disabled = true;
+            logoutButton.textContent = 'CERRANDO SESIÓN...';
+
+            try {
+                const response = await fetch('/api/disconnect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mac: macAddress })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    logoutMessage.style.color = 'green';
+                    logoutMessage.textContent = "¡Sesión cerrada con éxito! Ya no tienes acceso a internet.";
+                    logoutButton.style.display = 'none'; // Ocultar botón
+                } else {
+                    throw new Error(result.error || 'Error desconocido');
+                }
+            } catch (error) {
+                logoutMessage.style.color = 'red';
+                logoutMessage.textContent = `Error: ${error.message}`;
+            } finally {
+                logoutMessage.style.display = 'block';
+            }
+        });
+    </script>
 </body>
-</html>
