@@ -50,7 +50,11 @@
                 localStorage.setItem('portalFormData', JSON.stringify({ edad, sexo, especialidad }));
 
                 // Pedimos la URL de autenticación a nuestro backend.
-                const response = await fetch(`/api/callback?step=getAuthUrl&mac=${mac}&login_url=${encodeURIComponent(login_url)}`);
+                // Codificamos los datos del formulario para enviarlos al backend
+const encodedFormData = encodeURIComponent(JSON.stringify({ edad, sexo, especialidad }));
+
+// Pedimos la URL de autenticación a nuestro backend, AÑADIENDO los datos del formulario
+const response = await fetch(`/api/callback?step=getAuthUrl&mac=${mac}&login_url=${encodeURIComponent(login_url)}&form_data=${encodedFormData}`);
                 const data = await response.json();
                 
                 if (data.authUrl) {
