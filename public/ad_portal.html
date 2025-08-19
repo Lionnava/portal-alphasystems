@@ -25,9 +25,8 @@
     </div>
 
     <script>
-        // --- CONFIGURACIÓN ---
-        const IMAGE_COUNT = 10; 
-        const IMAGE_EXPOSURE_TIME = 3000; // 3 segundos
+        const IMAGE_COUNT = 25; 
+        const IMAGE_EXPOSURE_TIME = 3000;
         const TOTAL_TIME = IMAGE_COUNT * IMAGE_EXPOSURE_TIME;
         const PROGRESS_INTERVAL_TIME = 100;
 
@@ -47,7 +46,6 @@
             currentImageIndex = (currentImageIndex + 1) % IMAGE_COUNT;
         }
 
-        // --- LÓGICA DE LA BARRA DE PROGRESO Y REDIRECCIÓN ---
         function startAdPortal() {
             const progressBar = document.getElementById('progressBar');
             let progress = 0;
@@ -68,16 +66,12 @@
                     const urlParams = new URLSearchParams(window.location.search);
                     const loginUrl = urlParams.get('login_url');
                     const mac = urlParams.get('mac');
-                    
-                    // Definimos la URL de éxito final a donde debe ir el usuario
+
                     if (loginUrl && mac) {
-    progressBar.textContent = '¡Conectando!';
-    
-    // Construimos la URL de autorización MÁS SIMPLE POSIBLE
-    const finalAuthUrl = `${loginUrl}?user=${encodeURIComponent(mac)}&pws=google_ok`;
-    
-    window.location.href = finalAuthUrl;
-} else {
+                        progressBar.textContent = '¡Conectando!';
+                        
+                        // Construimos la URL de autorización simple y directa
+                        const finalAuthUrl = `${loginUrl}?user=${encodeURIComponent(mac)}&pws=google_ok`;
                         
                         window.location.href = finalAuthUrl;
                     } else {
