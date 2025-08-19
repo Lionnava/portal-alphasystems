@@ -60,12 +60,13 @@ const { data, error } = await supabase
       }
       // --- FIN DE LA LÓGICA DE SUPABASE ---
       
-      const successUrl = new URL(req.headers.host + '/success.html');
+      // Construir la URL de redirección final de forma robusta
+const protocol = process.env.VERCEL_ENV === 'production' ? 'https' : 'http';
+const host = process.env.VERCEL_URL || req.headers.host; // Usa la variable de Vercel o el header como fallback
+const successUrl = new URL(`${protocol}://${host}/success.html`);
 successUrl.searchParams.append('user', state_client_mac);
-const finalRedirectUrl = 'https' + '://' + successUrl.toString();
 
-const grandstreamAuthUrl = `${state_login_url}?user=${encodeURIComponent(state_client_mac)}&pws=google_ok&url=${encodeURIComponent(finalRedirectUrl)}`;
-      
+const grandstreamAuthUrl = `${state_login_url}?user=${encodeURIComponent(state_client_mac)}&pws=google_ok&url=${encodeURIComponent(successUrl.toString())}`;
       return res.redirect(302, grandstreamAuthUrl);
 
     } catch (error) {
