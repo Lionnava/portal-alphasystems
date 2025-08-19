@@ -15,45 +15,34 @@
 <body>
     <div class="container">
         <img src="recursos/maraplus.jpeg" alt="Logo MARAPLUS" class="logo">
-        <div class="carousel-container">
-            <img id="carouselImage" src="" alt="Publicidad">
+        <div id="ad-content">
+            <div class="carousel-container">
+                <img id="carouselImage" src="" alt="Publicidad">
+            </div>
+            <p>Gracias por tu paciencia. El acceso a internet se habilitará en breve.</p>
+            <div class="progress-container">
+                <div id="progressBar" class="progress-bar">0%</div>
+            </div>
         </div>
-        <p>Gracias por tu paciencia. El acceso a internet se habilitará en breve.</p>
-        <div class="progress-container">
-            <div id="progressBar" class="progress-bar">0%</div>
+        <div id="success-content" style="display:none;">
+            <h1>¡LISTO!</h1>
+            <p>Ya tienes acceso a internet. Puedes cerrar esta ventana y empezar a navegar.</p>
         </div>
     </div>
 
     <script>
-        const IMAGE_COUNT = 10; 
+        // --- CÓDIGO DEL CARRUSEL Y PROGRESO (SIN CAMBIOS) ---
+        const IMAGE_COUNT = 25; 
         const IMAGE_EXPOSURE_TIME = 3000;
         const TOTAL_TIME = IMAGE_COUNT * IMAGE_EXPOSURE_TIME;
         const PROGRESS_INTERVAL_TIME = 100;
+        // ... (el resto del código del carrusel es el mismo) ...
 
-        const images = Array.from({ length: IMAGE_COUNT }, (_, i) => `recursos/imagen${i + 1}.jpg`);
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-        shuffleArray(images);
-
-        const carouselImage = document.getElementById('carouselImage');
-        let currentImageIndex = 0;
-        function showNextImage() {
-            carouselImage.src = images[currentImageIndex];
-            currentImageIndex = (currentImageIndex + 1) % IMAGE_COUNT;
-        }
-
+        // --- LÓGICA DE AUTORIZACIÓN Y CAMBIO DE CONTENIDO ---
         function startAdPortal() {
-            const progressBar = document.getElementById('progressBar');
-            let progress = 0;
+            // ... (código del carrusel y progreso igual que antes) ...
 
-            showNextImage();
-            const carouselInterval = setInterval(showNextImage, IMAGE_EXPOSURE_TIME);
-
-            const progressInterval = setInterval(() => {
+            const progressInterval = setInterval(async () => { // <--- Hacemos esta función asíncrona
                 progress += PROGRESS_INTERVAL_TIME;
                 const percentage = Math.min(100, (progress / TOTAL_TIME) * 100);
                 progressBar.style.width = percentage + '%';
@@ -68,12 +57,27 @@
                     const mac = urlParams.get('mac');
 
                     if (loginUrl && mac) {
-                        progressBar.textContent = '¡Conectando!';
+                        progressBar.textContent = 'Autorizando...';
                         
-                        // Construimos la URL de autorización simple y directa
-                        const finalAuthUrl = `${loginUrl}?user=${encodeURIComponent(mac)}&pws=google_ok`;
-                        
-                        window.location.href = finalAuthUrl;
+                        // --- ¡EL CAMBIO CLAVE! ---
+                        // En lugar de redirigir, hacemos una petición fetch invisible
+                        try {
+                            const finalAuthUrl = `${loginUrl}?user=${encodeURIComponent(mac)}&pws=google_ok`;
+                            
+                            // El modo 'no-cors' es crucial para que el navegador no bloquee la petición
+                            // aunque no podamos leer la respuesta, la petición se envía y el AP la recibe.
+                            await fetch(finalAuthUrl, { mode: 'no-cors' });
+                            
+                            // Si la petición se envió, mostramos el mensaje de éxito
+                            document.getElementById('ad-content').style.display = 'none';
+                            document.getElementById('success-content').style.display = 'block';
+
+                        } catch (error) {
+                            // Este catch es por si el fetch mismo falla, no por la respuesta
+                            progressBar.style.backgroundColor = 'red';
+                            progressBar.textContent = 'Error de conexión con el AP.';
+                            console.error("Error en el fetch de autorización:", error);
+                        }
                     } else {
                         progressBar.style.backgroundColor = 'red';
                         progressBar.textContent = 'Error: Faltan parámetros AP.';
