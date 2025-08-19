@@ -26,15 +26,12 @@
 
     <script>
         // --- CONFIGURACIÓN ---
-        const IMAGE_COUNT = 25; // Número total de imágenes
-        const IMAGE_EXPOSURE_TIME = 3000; // 3 segundos en milisegundos
+        const IMAGE_COUNT = 25; 
+        const IMAGE_EXPOSURE_TIME = 3000; // 3 segundos
         const TOTAL_TIME = IMAGE_COUNT * IMAGE_EXPOSURE_TIME;
-        const PROGRESS_INTERVAL_TIME = 100; // Actualizar la barra cada 100ms
+        const PROGRESS_INTERVAL_TIME = 100;
 
-        // --- LÓGICA DEL CARRUSEL ---
-        // Construimos la lista de imágenes. Asegúrate de tener archivos llamados imagen1.jpg, imagen2.jpg, etc.
         const images = Array.from({ length: IMAGE_COUNT }, (_, i) => `recursos/imagen${i + 1}.jpg`);
-
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -45,7 +42,6 @@
 
         const carouselImage = document.getElementById('carouselImage');
         let currentImageIndex = 0;
-
         function showNextImage() {
             carouselImage.src = images[currentImageIndex];
             currentImageIndex = (currentImageIndex + 1) % IMAGE_COUNT;
@@ -56,7 +52,7 @@
             const progressBar = document.getElementById('progressBar');
             let progress = 0;
 
-            showNextImage(); // Muestra la primera imagen inmediatamente
+            showNextImage();
             const carouselInterval = setInterval(showNextImage, IMAGE_EXPOSURE_TIME);
 
             const progressInterval = setInterval(() => {
@@ -70,20 +66,27 @@
                     clearInterval(carouselInterval);
                     
                     const urlParams = new URLSearchParams(window.location.search);
-                    const authUrl = urlParams.get('auth_url');
+                    const loginUrl = urlParams.get('login_url');
+                    const mac = urlParams.get('mac');
+                    
+                    // Definimos la URL de éxito final a donde debe ir el usuario
+                    const successUrl = `${window.location.protocol}//${window.location.host}/success.html?user=${mac}`;
 
-                    if (authUrl) {
+                    if (loginUrl && mac) {
                         progressBar.textContent = '¡Conectando!';
-                        window.location.href = decodeURIComponent(authUrl);
+                        
+                        // Construimos la URL de autorización FINAL
+                        const finalAuthUrl = `${loginUrl}?user=${encodeURIComponent(mac)}&pws=google_ok&url=${encodeURIComponent(successUrl)}`;
+                        
+                        window.location.href = finalAuthUrl;
                     } else {
                         progressBar.style.backgroundColor = 'red';
-                        progressBar.textContent = 'Error de autorización. Por favor, reconéctese.';
+                        progressBar.textContent = 'Error: Faltan parámetros AP.';
                     }
                 }
             }, PROGRESS_INTERVAL_TIME);
         }
 
-        // Iniciar todo cuando la página haya cargado
         window.onload = startAdPortal;
     </script>
 </body>
