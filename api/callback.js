@@ -3,16 +3,15 @@ import { google } from 'googleapis';
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  
-  const oauth2Client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URL
-  );
-  
-  const { step, code, state: receivedState, mac, login_url, form_data } = req.query;
-
   try {
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URL
+    );
+
+    const { step, code, state: receivedState, mac, login_url, form_data } = req.query;
+
     // --- Flujo 1: Generar URL para Google ---
     if (step === 'getAuthUrl') {
       const formData = JSON.parse(decodeURIComponent(form_data));
@@ -40,9 +39,8 @@ export default async function handler(req, res) {
         throw new Error("Datos críticos (AP o formulario) no se encontraron en el estado.");
       }
 
-      // 1. GUARDAR DATOS EN SUPABASE
       const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-      const { error } = await supabase.from('sesiones').insert([{ 
+      await supabase.from('sesiones').insert([{ 
           email: userInfo.email, 
           nombre: userInfo.name,
           mac_cliente: state_client_mac,
@@ -50,10 +48,7 @@ export default async function handler(req, res) {
           sexo: datosFormulario.sexo,
           especialidad: datosFormulario.especialidad
       }]);
-
-      if (error) { console.error('Error al guardar en Supabase:', error.message); } 
       
-      // 2. CONSTRUIR URLS PARA REDIRECCIÓN
       const host = req.headers.host;
       const adPortalUrl = new URL(`https://${host}/ad_portal.html`);
       
