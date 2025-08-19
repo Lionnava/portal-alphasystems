@@ -10,7 +10,7 @@
     <div class="container">
         <h1>Bienvenid@ a AlphaSystems</h1>
         <img src="recursos/maraplus.jpeg" alt="Logo MARAPLUS" class="logo">
-        <p id="status-message">Completa tus datos y accede con Google para obtener internet gratis.</p>
+        <p>Completa tus datos y accede con Google para obtener internet gratis.</p>
         <form id="userDataForm">
             <input type="number" id="edad" name="edad" placeholder="Edad" required>
             <select id="sexo" name="sexo" required>
@@ -24,81 +24,44 @@
                 <option value="ginecologia">Ginecología</option>
             </select>
         </form>
-        <button id="googleLoginButton" disabled>CARGANDO...</button>
+        <button id="googleLoginButton">ACCEDER CON GOOGLE</button>
         <div class="footer">
             <p>© 2025 AlphaSystems.com</p>
         </div>
     </div>
     <script>
-        // Guardaremos los parámetros de Grandstream en estas variables
-        let macAddress = null;
-        let loginUrl = null;
-
-        async function initializePortal() {
-            const googleLoginButton = document.getElementById('googleLoginButton');
-            const statusMessage = document.getElementById('status-message');
-
-            const urlParams = new URLSearchParams(window.location.search);
-            macAddress = urlParams.get('mac');
-            loginUrl = urlParams.get('login_url');
-
-            // Si los parámetros están en la URL, perfecto.
-            if (macAddress && loginUrl) {
-                console.log("Parámetros encontrados en la URL.");
-                googleLoginButton.disabled = false;
-                googleLoginButton.textContent = 'ACCEDER CON GOOGLE';
-                return;
-            }
-
-            // Si NO están, le pedimos al backend que los busque
-            statusMessage.textContent = 'Obteniendo configuración de la red...';
-            try {
-                // Esta es una nueva llamada a nuestro backend
-                const response = await fetch('/api/get-params');
-                const data = await response.json();
-
-                if (data.mac && data.login_url) {
-                    console.log("Parámetros obtenidos del backend.");
-                    macAddress = data.mac;
-                    loginUrl = data.login_url;
-                    statusMessage.textContent = 'Completa tus datos y accede con Google para obtener internet gratis.';
-                    googleLoginButton.disabled = false;
-                    googleLoginButton.textContent = 'ACCEDER CON GOOGLE';
-                } else {
-                    throw new Error(data.error || 'No se pudieron obtener los parámetros.');
-                }
-            } catch (error) {
-                console.error(error);
-                statusMessage.textContent = 'Error: No se pudo configurar el acceso. Por favor, reconéctese al Wi-Fi.';
-                googleLoginButton.style.backgroundColor = 'grey';
-            }
-        }
-        
         document.getElementById('googleLoginButton').addEventListener('click', async function() {
-            // ... (el resto del script del botón es el mismo que antes, usando las variables macAddress y loginUrl) ...
             const form = document.getElementById('userDataForm');
-            if (form.checkValidity() && macAddress && loginUrl) {
+            if (form.checkValidity()) {
                 const edad = document.getElementById('edad').value;
                 const sexo = document.getElementById('sexo').value;
                 const especialidad = document.getElementById('especialidad').value;
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                // --- CORRECCIÓN CLAVE ---
+                // Grandstream envía "client_mac", no "mac".
+                const mac = urlParams.get('client_mac'); 
+                const login_url = urlParams.get('login_url');
+
+                if (!mac || !login_url) {
+                    alert('Error: Faltan parámetros del punto de acceso. Por favor, reconéctese a la red Wi-Fi.');
+                    return;
+                }
 
                 const encodedFormData = encodeURIComponent(JSON.stringify({ edad, sexo, especialidad }));
-                const response = await fetch(`/api/callback?step=getAuthUrl&mac=${macAddress}&login_url=${encodeURIComponent(loginUrl)}&form_data=${encodedFormData}`);
+                const response = await fetch(`/api/callback?step=getAuthUrl&mac=${mac}&login_url=${encodeURIComponent(login_url)}&form_data=${encodedFormData}`);
+                
                 const data = await response.json();
                 
                 if (data.authUrl) {
                     window.location.href = data.authUrl;
                 } else {
-                    alert('Error al contactar el servidor de autenticación.');
+                    alert('Error al contactar el servidor de autenticación. Por favor, intente de nuevo.');
                 }
             } else {
-                if(!macAddress || !loginUrl) alert('Error: Aún faltan los parámetros del punto de acceso.');
                 form.reportValidity();
             }
         });
-
-        // Iniciar el portal cuando la página cargue
-        window.onload = initializePortal;
     </script>
 </body>
 </html>
