@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicidad - AlphaSystems WiFi</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .progress-container { width: 100%; background-color: #e0e0e0; border-radius: 8px; margin: 20px 0; }
+        .progress-bar { width: 0%; height: 20px; background-color: #4CAF50; border-radius: 8px; text-align: center; line-height: 20px; color: white; transition: width 0.1s linear; }
+        .carousel-container { height: 250px; border: 1px solid #ddd; background-color: #f9f9f9; position: relative; overflow: hidden; }
+        #carouselImage { width:100%; height:100%; object-fit: contain; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="recursos/maraplus.jpeg" alt="Logo MARAPLUS" class="logo">
+        <div class="carousel-container">
+            <img id="carouselImage" src="" alt="Publicidad">
+        </div>
+        <p>Gracias por tu paciencia. El acceso a internet se habilitará en breve.</p>
+        <div class="progress-container">
+            <div id="progressBar" class="progress-bar">0%</div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        const IMAGE_COUNT = 25; // Número total de imágenes
+        const IMAGE_EXPOSURE_TIME = 3000; // 3 segundos en milisegundos
+        const TOTAL_TIME = IMAGE_COUNT * IMAGE_EXPOSURE_TIME;
+        const PROGRESS_INTERVAL_TIME = 100; // Actualizar la barra cada 100ms
+
+        // --- LÓGICA DEL CARRUSEL ---
+        // Construimos la lista de imágenes. Asegúrate de tener archivos llamados imagen1.jpg, imagen2.jpg, etc.
+        const images = Array.from({ length: IMAGE_COUNT }, (_, i) => `recursos/imagen${i + 1}.jpg`);
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        shuffleArray(images);
+
+        const carouselImage = document.getElementById('carouselImage');
+        let currentImageIndex = 0;
+
+        function showNextImage() {
+            carouselImage.src = images[currentImageIndex];
+            currentImageIndex = (currentImageIndex + 1) % IMAGE_COUNT;
+        }
+
+        // --- LÓGICA DE LA BARRA DE PROGRESO Y REDIRECCIÓN ---
+        function startAdPortal() {
+            const progressBar = document.getElementById('progressBar');
+            let progress = 0;
+
+            showNextImage(); // Muestra la primera imagen inmediatamente
+            const carouselInterval = setInterval(showNextImage, IMAGE_EXPOSURE_TIME);
+
+            const progressInterval = setInterval(() => {
+                progress += PROGRESS_INTERVAL_TIME;
+                const percentage = Math.min(100, (progress / TOTAL_TIME) * 100);
+                progressBar.style.width = percentage + '%';
+                progressBar.textContent = Math.round(percentage) + '%';
+
+                if (progress >= TOTAL_TIME) {
+                    clearInterval(progressInterval);
+                    clearInterval(carouselInterval);
+                    
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const authUrl = urlParams.get('auth_url');
+
+                    if (authUrl) {
+                        progressBar.textContent = '¡Conectando!';
+                        window.location.href = decodeURIComponent(authUrl);
+                    } else {
+                        progressBar.style.backgroundColor = 'red';
+                        progressBar.textContent = 'Error de autorización. Por favor, reconéctese.';
+                    }
+                }
+            }, PROGRESS_INTERVAL_TIME);
+        }
+
+        // Iniciar todo cuando la página haya cargado
+        window.onload = startAdPortal;
+    </script>
+</body>
+</html>
