@@ -70,13 +70,14 @@
                     const mac = urlParams.get('mac');
                     
                     // Definimos la URL de éxito final a donde debe ir el usuario
-                    const successUrl = `${window.location.protocol}//${window.location.host}/success.html?user=${mac}`;
-
                     if (loginUrl && mac) {
-                        progressBar.textContent = '¡Conectando!';
-                        
-                        // Construimos la URL de autorización FINAL
-                        const finalAuthUrl = `${loginUrl}?user=${encodeURIComponent(mac)}&pws=google_ok&url=${encodeURIComponent(successUrl)}`;
+    progressBar.textContent = '¡Conectando!';
+    
+    // Construimos la URL de autorización MÁS SIMPLE POSIBLE
+    const finalAuthUrl = `${loginUrl}?user=${encodeURIComponent(mac)}&pws=google_ok`;
+    
+    window.location.href = finalAuthUrl;
+} else {
                         
                         window.location.href = finalAuthUrl;
                     } else {
